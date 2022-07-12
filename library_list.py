@@ -1,7 +1,8 @@
 
-
 """Load Library List, Print without formatting"""
 
+import os
+import subprocess
 import re
 
 from tkinter.filedialog import askopenfilenames
@@ -30,8 +31,13 @@ def print_library_list():
 
     book_list_all.sort()
 
-    for book_title in book_list_all:
-        print(book_title)
+    outfile = re.sub(os.path.basename(__file__), "output.txt", os.path.abspath(__file__))
 
+    with open(outfile, "w") as outfile:
+        for book_title in book_list_all:
+            print(book_title)
+            outfile.write(book_title)
+
+    # subprocess.run("gedit {}".format(outfile))
 
 print_library_list()
