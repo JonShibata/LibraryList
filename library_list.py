@@ -13,30 +13,27 @@ def print_library_list():
     html_files = askopenfilenames(title="Select Library Lists",
                                  filetypes=[(".HTML", ".html")])
 
-    book_list_all = []
+    book_list_all = set()
 
     for html_file in html_files:
 
         with open(html_file) as html_str:
-            book_list = re.findall("{}{}{}{}".format(
-                '<div _ngcontent-spc-c521="" class="ng-star-inserted">',
-                ' Title: <b _ngcontent-spc-c521="">',
-                '(.*?)',
-                '</b>'),
+            book_list = re.findall("{}".format(
+                'Title: .*?<.*?-c521="">(.*?)<'),
                 html_str.read(), flags=re.DOTALL)
 
         for book_title in book_list:
-            book_list_all.append(book_title)
+            book_list_all.add(book_title)
 
 
-    book_list_all.sort()
+    book_list_all = sorted(book_list_all)
 
     outfile = re.sub(os.path.basename(__file__), "output.txt", os.path.abspath(__file__))
 
     with open(outfile, "w") as outfile:
         for book_title in book_list_all:
             print(book_title)
-            outfile.write(book_title)
+            outfile.write("{}\n".format(book_title))
 
     # subprocess.run("gedit {}".format(outfile))
 
