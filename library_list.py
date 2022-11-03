@@ -13,23 +13,32 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.keys import Keys
 
 
-
 def print_library_list(html_str):
 
+    outfile = re.sub(os.path.basename(__file__), "raw_html.txt", os.path.abspath(__file__))
+
+    if False:  # Debug option to read data from existing raw_html file.
+
+        with open(outfile, "r") as outfile:
+            html_str = outfile.read()
+    else:
+        with open(outfile, "w") as outfile:
+            outfile.write(html_str)
 
     book_list_all = set()
 
-    book_list = re.findall("{}".format(
-        'Title: .*?<.*?-c521="">(.*?)<.*?DateDue:.*?<.*?-c521="">([0-9]{1,2}/[0-9]{1,2})/'),
+    book_list = re.findall(
+        'Title: .*?<.*?-c[0-9]{2,}="">(.*?)<.*?DateDue:.*?<.*?-c[0-9]{2,}="">([0-9]{1,2}/[0-9]{1,2})/',
         html_str, flags=re.DOTALL)
 
     for book_info in book_list:
         title_str = book_info[0].replace("&amp;", "&")
-        book_list_all.add("{}-{}".format(book_info[1], title_str))
-
+        date_items = book_info[1].split("/")
+        date_str = "{:0>2}/{:0>2}".format(date_items[0], date_items[1])
+        book_list_all.add("{}-{}".format(date_str, title_str))
 
     book_list_all = sorted(book_list_all)
-    
+
     outfile = re.sub(os.path.basename(__file__), "output.txt", os.path.abspath(__file__))
 
     with open(outfile, "w") as outfile:
@@ -37,22 +46,12 @@ def print_library_list(html_str):
             print(book_title)
             outfile.write("{}\n".format(book_title))
 
-    outfile = re.sub(os.path.basename(__file__), "raw_html.txt", os.path.abspath(__file__))
-
-    with open(outfile, "w") as outfile:
-        outfile.write(html_str)
-
-
     # subprocess.run("gedit {}".format(outfile))
-
-
-
 
 
 def get_library_data():
 
     id_list = ("903675", "902232", "6596")
-
 
     browser = webdriver.Chrome()
     browser.set_window_size(1800, 1200)
@@ -62,27 +61,30 @@ def get_library_data():
 
         browser.get('https://hamb.agverso.com/login?cid=hamb&lid=HAMB')
 
-        WebDriverWait(browser, 100).until(EC.presence_of_element_located((By.ID, "username"))).send_keys(id)
-        
+        WebDriverWait(browser, 100).until(
+            EC.presence_of_element_located((By.ID, "username"))).send_keys(id)
+
         password_box = browser.find_element(By.ID, "password")
         password_box.send_keys("library")
-        password_box.send_keys(Keys.RETURN) 
+        password_box.send_keys(Keys.RETURN)
 
-        WebDriverWait(browser, 100).until(EC.presence_of_element_located((By.CLASS_NAME, "fa-angle-down"))).click()
+        WebDriverWait(browser, 100).until(EC.presence_of_element_located(
+            (By.CLASS_NAME, "fa-angle-down"))).click()
 
-        WebDriverWait(browser, 100).until(EC.presence_of_element_located((By.ID, "itemsOut"))).click()
+        WebDriverWait(browser, 100).until(
+            EC.presence_of_element_located((By.ID, "itemsOut"))).click()
 
-        WebDriverWait(browser, 100).until(EC.presence_of_element_located((By.CLASS_NAME, "mx-auto")))
+        WebDriverWait(browser, 100).until(
+            EC.presence_of_element_located((By.CLASS_NAME, "mx-auto")))
 
         html_str = html_str + browser.page_source
 
-        WebDriverWait(browser, 100).until(EC.presence_of_element_located((By.CLASS_NAME, "fa-angle-down"))).click()
+        WebDriverWait(browser, 100).until(EC.presence_of_element_located(
+            (By.CLASS_NAME, "fa-angle-down"))).click()
 
         WebDriverWait(browser, 100).until(EC.presence_of_element_located((By.ID, "logOut"))).click()
 
     return (html_str)
 
 
-
 print_library_list(get_library_data())
-
