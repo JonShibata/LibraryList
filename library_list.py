@@ -13,22 +13,17 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.keys import Keys
 
 
-def print_library_list(html_str):
+def print_library_list():
 
     outfile = re.sub(os.path.basename(__file__), "raw_html.txt", os.path.abspath(__file__))
 
-    if False:  # Debug option to read data from existing raw_html file.
-
-        with open(outfile, "r") as outfile:
-            html_str = outfile.read()
-    else:
-        with open(outfile, "w") as outfile:
-            outfile.write(html_str)
+    with open(outfile, "r") as outfile:
+        html_str = outfile.read()
 
     book_list_all = set()
 
     book_list = re.findall(
-        'Title: .*?<.*?-c[0-9]{2,}="">(.*?)<.*?DateDue:.*?<.*?-c[0-9]{2,}="">([0-9]{1,2}/[0-9]{1,2})/',
+        'Title: .*?<.*?-c[0-9]{2,}="">(.*?)<.*?Due Date:.*?<.*?-c[0-9]{2,}="">([0-9]{1,2}/[0-9]{1,2})/',
         html_str, flags=re.DOTALL)
 
     for book_info in book_list:
@@ -46,8 +41,6 @@ def print_library_list(html_str):
             print(book_title)
             outfile.write("{}\n".format(book_title))
 
-    # subprocess.run("gedit {}".format(outfile))
-
 
 def get_library_data():
 
@@ -61,30 +54,35 @@ def get_library_data():
 
         browser.get('https://hamb.agverso.com/login?cid=hamb&lid=HAMB')
 
-        WebDriverWait(browser, 100).until(
+        WebDriverWait(browser, 100.0, 2.0).until(
             EC.presence_of_element_located((By.ID, "username"))).send_keys(id)
 
         password_box = browser.find_element(By.ID, "password")
         password_box.send_keys("library")
         password_box.send_keys(Keys.RETURN)
 
-        WebDriverWait(browser, 100).until(EC.presence_of_element_located(
+        WebDriverWait(browser, 100.0, 2.0).until(EC.presence_of_element_located(
             (By.CLASS_NAME, "fa-angle-down"))).click()
 
-        WebDriverWait(browser, 100).until(
+        WebDriverWait(browser, 100.0, 2.0).until(
             EC.presence_of_element_located((By.ID, "itemsOut"))).click()
 
-        WebDriverWait(browser, 100).until(
+        WebDriverWait(browser, 100.0, 2.0).until(
             EC.presence_of_element_located((By.CLASS_NAME, "mx-auto")))
 
         html_str = html_str + browser.page_source
 
-        WebDriverWait(browser, 100).until(EC.presence_of_element_located(
+        WebDriverWait(browser, 100.0, 2.0).until(EC.presence_of_element_located(
             (By.CLASS_NAME, "fa-angle-down"))).click()
 
-        WebDriverWait(browser, 100).until(EC.presence_of_element_located((By.ID, "logOut"))).click()
+        WebDriverWait(browser, 100.0, 2.0).until(
+            EC.presence_of_element_located((By.ID, "logOut"))).click()
 
-    return (html_str)
+    outfile = re.sub(os.path.basename(__file__), "raw_html.txt", os.path.abspath(__file__))
+
+    with open(outfile, "w") as outfile:
+        outfile.write(html_str)
 
 
-print_library_list(get_library_data())
+get_library_data()
+print_library_list()
