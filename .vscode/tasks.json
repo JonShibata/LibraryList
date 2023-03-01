@@ -1,0 +1,10 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Create Library List",
+            "type": "shell",
+            "command": "python3 library_list.py"
+        }
+    ]
+}

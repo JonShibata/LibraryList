@@ -4,6 +4,7 @@
 import os
 import subprocess
 import re
+import time
 
 
 from selenium import webdriver
@@ -29,17 +30,19 @@ def print_library_list():
     for book_info in book_list:
         title_str = book_info[0].replace("&amp;", "&")
         date_items = book_info[1].split("/")
-        date_str = "{:0>2}/{:0>2}".format(date_items[0], date_items[1])
-        book_list_all.add("{}-{}".format(date_str, title_str))
+        date_str = f"{date_items[0]:0>2}/{date_items[1]:0>2}"
+        book_list_all.add(f"{date_str}-{title_str}")
 
     book_list_all = sorted(book_list_all)
 
-    outfile = re.sub(os.path.basename(__file__), "output.txt", os.path.abspath(__file__))
+    outfile_name = re.sub(os.path.basename(__file__), "output.txt", os.path.abspath(__file__))
 
-    with open(outfile, "w") as outfile:
+    with open(outfile_name, "w") as outfile:
         for book_title in book_list_all:
             print(book_title)
-            outfile.write("{}\n".format(book_title))
+            outfile.write(f"{book_title}\n")
+
+    os.system(f"code {outfile_name}")
 
 
 def get_library_data():
@@ -77,6 +80,8 @@ def get_library_data():
 
         WebDriverWait(browser, 100.0, 2.0).until(
             EC.presence_of_element_located((By.ID, "logOut"))).click()
+        
+        time.sleep(1)
 
     outfile = re.sub(os.path.basename(__file__), "raw_html.txt", os.path.abspath(__file__))
 
