@@ -21,4 +21,4 @@
 ChromeDriver must be updated to match installed version of Chrome
 Download update from this link: https://chromedriver.chromium.org/downloads
 Copy chromedriver file to /usr/bin: 
-    sudo cp ~/Downloads/vm/chromedriver_linux64/chromedriver /usr/bin
+    sudo cp ~/Downloads/vm/chromedriver /usr/bin
