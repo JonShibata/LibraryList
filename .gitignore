@@ -1,2 +1,5 @@
 output.txt
 raw_html.txt
+chromedriver.exe
+chrome-win64/
+LICENSE.chromedriver
