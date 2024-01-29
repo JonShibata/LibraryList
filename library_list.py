@@ -5,7 +5,7 @@ import os
 import subprocess
 import re
 import time
-
+from datetime import datetime
 
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -31,7 +31,13 @@ def print_library_list():
         title_str = book_info[0].replace("&amp;", "&")
         date_items = book_info[1].split("/")
         date_str = f"{date_items[0]:0>2}/{date_items[1]:0>2}"
-        book_list_all.add(f"{title_str} - {date_str}")
+
+        overdue_flag = " *** OVERDUE *** "
+        book_date = datetime(datetime.now().year, int(date_items[0]), int(date_items[1]))
+        if datetime.now() < book_date:
+            overdue_flag = ""
+
+        book_list_all.add(f"{overdue_flag}{title_str} - {date_str}")
 
     book_list_all = sorted(book_list_all)
 
@@ -67,35 +73,30 @@ def get_library_data():
         WebDriverWait(browser, 100.0, 2.0).until(
             EC.presence_of_element_located((By.ID, "username"))).send_keys(id)
 
-        password_box = browser.find_element(By.ID, "password")
-        password_box.send_keys("library")
-
-        submit_button = browser.find_element(
-            By.XPATH,
-            "//button[@class='mat-focus-indicator ag-mat-button-primary mat-button mat-button-base']")
-        submit_button.click()
-
-        # password_box.send_keys(Keys.RETURN)
+        WebDriverWait(browser, 100.0, 2.0).until(
+            EC.presence_of_element_located((By.ID, "password"))).send_keys("library"+Keys.ENTER)
 
         WebDriverWait(browser, 100.0, 2.0).until(EC.presence_of_element_located(
             (By.CLASS_NAME, "fa-angle-down"))).click()
 
         WebDriverWait(browser, 100.0, 2.0).until(
-            EC.presence_of_element_located((By.ID, "itemsOut"))).click()
+            EC.presence_of_element_located((By.XPATH, "//a[text()='Items Out ']"))).click()
+        
+        WebDriverWait(browser, 100.0, 2.0).until(
+            EC.presence_of_element_located(
+                (By.XPATH, "//button[@aria-label='Renew All']"))).click()
 
         WebDriverWait(browser, 100.0, 2.0).until(
-            EC.presence_of_element_located((By.CLASS_NAME, "mx-auto")))
+            EC.presence_of_element_located((By.XPATH, "//button[@aria-label='OK']"))).click()
 
+        WebDriverWait(browser, 100.0, 2.0).until(EC.presence_of_element_located(
+            (By.CLASS_NAME, "fa-angle-down"))).click()
+        
         html_str = html_str + browser.page_source
 
-        WebDriverWait(browser, 100.0, 2.0).until(EC.presence_of_element_located(
-            (By.CLASS_NAME, "fa-angle-down"))).click()
-
-        time.sleep(1.5)
         WebDriverWait(browser, 100.0, 2.0).until(
-            EC.presence_of_element_located((By.ID, "logOut"))).click()
-
-        time.sleep(1.5)
+            EC.presence_of_element_located(
+                (By.XPATH, "//span[contains(text(), 'Logout')]"))).click()
 
     outfile = re.sub(os.path.basename(__file__), "raw_html.txt", os.path.abspath(__file__))
 
