@@ -2,9 +2,8 @@
 """Load Library List, Print without formatting"""
 
 import os
-import subprocess
 import re
-import time
+import sys
 from datetime import datetime
 
 from selenium import webdriver
@@ -51,7 +50,7 @@ def print_library_list():
     os.system(f"code {outfile_name}")
 
 
-def get_library_data():
+def get_library_data(renew_all=False):
 
     # change directory to the location of this file
 
@@ -82,12 +81,15 @@ def get_library_data():
         WebDriverWait(browser, 100.0, 2.0).until(
             EC.presence_of_element_located((By.XPATH, "//a[text()='Items Out ']"))).click()
         
-        WebDriverWait(browser, 100.0, 2.0).until(
-            EC.presence_of_element_located(
-                (By.XPATH, "//button[@aria-label='Renew All']"))).click()
+        renew_all_button = WebDriverWait(browser, 100.0, 2.0).until(
+                EC.presence_of_element_located(
+                    (By.XPATH, "//button[@aria-label='Renew All']")))
 
-        WebDriverWait(browser, 100.0, 2.0).until(
-            EC.presence_of_element_located((By.XPATH, "//button[@aria-label='OK']"))).click()
+        if renew_all:
+            renew_all_button.click()
+
+            WebDriverWait(browser, 100.0, 2.0).until(
+                EC.presence_of_element_located((By.XPATH, "//button[@aria-label='OK']"))).click()
 
         WebDriverWait(browser, 100.0, 2.0).until(EC.presence_of_element_located(
             (By.CLASS_NAME, "fa-angle-down"))).click()
@@ -98,11 +100,22 @@ def get_library_data():
             EC.presence_of_element_located(
                 (By.XPATH, "//span[contains(text(), 'Logout')]"))).click()
 
+        WebDriverWait(browser, 100.0, 2.0).until(
+            EC.presence_of_element_located(
+                (By.XPATH, "//a[text()='Please Login ']" ))).click()
+        
+
+        
     outfile = re.sub(os.path.basename(__file__), "raw_html.txt", os.path.abspath(__file__))
 
     with open(outfile, "w") as outfile:
         outfile.write(html_str)
 
 
-get_library_data()
+
+if len(sys.argv) >= 2 and sys.argv[1] in ("-r", "--renew-all"):
+    get_library_data(True)        
+else:
+    get_library_data()
+    
 print_library_list()
