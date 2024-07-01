@@ -4,6 +4,7 @@
 import os
 import re
 import sys
+import time
 from datetime import datetime
 
 from selenium import webdriver
@@ -74,6 +75,8 @@ def get_library_data(renew_all=False):
 
         WebDriverWait(browser, 100.0, 2.0).until(
             EC.presence_of_element_located((By.ID, "password"))).send_keys("library"+Keys.ENTER)
+        
+        time.sleep(1)
 
         WebDriverWait(browser, 100.0, 2.0).until(EC.presence_of_element_located(
             (By.CLASS_NAME, "fa-angle-down"))).click()
