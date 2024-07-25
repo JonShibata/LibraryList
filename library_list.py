@@ -6,6 +6,7 @@ import re
 import sys
 import time
 from datetime import datetime
+import platform
 
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -59,8 +60,15 @@ def get_library_data(renew_all=False):
              
     id_list = ("903675", "902232", "6596")
 
+    os_name = platform.system()
     options = Options()
-    options.binary_location = "chrome-win64/chrome.exe"
+    
+    if os_name == "Windows":
+        options.binary_location = "chrome-win64/chrome.exe"
+    
+    elif os_name == "Linux":
+        options.binary_location = "chrome-linux64/chrome"
+
     browser = webdriver.Chrome(options=options)
 
     browser.set_window_size(1800, 1200)
