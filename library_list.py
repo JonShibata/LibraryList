@@ -6,7 +6,6 @@ import re
 import sys
 import time
 from datetime import datetime
-import platform
 
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -14,6 +13,9 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.options import Options
+
+import chromedriver_autoinstaller
+from pyvirtualdisplay import Display
 
 def print_library_list():
 
@@ -49,26 +51,21 @@ def print_library_list():
             print(book_title)
             outfile.write(f"{book_title}\n")
 
-    os.system(f"code {outfile_name}")
+    # os.system(f"code {outfile_name}")
 
 
 def get_library_data(renew_all=False):
 
-    # change directory to the location of this file
+    display = Display(visible=0, size=(1800, 1200))  
+    display.start()
 
+    # change directory to the location of this file
     os.chdir(os.path.dirname(__file__))
              
     id_list = ("903675", "902232", "6596")
 
-    os_name = platform.system()
     options = Options()
     
-    if os_name == "Windows":
-        options.binary_location = "chrome-win64/chrome.exe"
-    
-    elif os_name == "Linux":
-        options.binary_location = "chrome-linux64/chrome"
-
     browser = webdriver.Chrome(options=options)
 
     browser.set_window_size(1800, 1200)
@@ -115,13 +112,10 @@ def get_library_data(renew_all=False):
             EC.presence_of_element_located(
                 (By.XPATH, "//a[text()='Please Login ']" ))).click()
         
-
-        
     outfile = re.sub(os.path.basename(__file__), "raw_html.txt", os.path.abspath(__file__))
 
     with open(outfile, "w") as outfile:
         outfile.write(html_str)
-
 
 
 if len(sys.argv) >= 2 and sys.argv[1] in ("-r", "--renew-all"):
