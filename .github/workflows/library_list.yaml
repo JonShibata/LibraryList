@@ -1,5 +1,7 @@
 name: launch library list
 on:
+  schedule:
+    - cron: '0 0 * * 2,4' # Run every Tuesday and Thursday at midnight
   workflow_dispatch:
 jobs:
   scrape:
@@ -27,6 +29,7 @@ jobs:
         run: |
          git config --global user.name "github-actions[bot]"
          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+         git checkout results
          git add -A
          git commit -m "GitHub Actions Results added"
          git push
