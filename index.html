@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task List</title>
+    <style>
+        body, table {
+            font-family: Consolas, monospace;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+        th {
+            cursor: pointer;
+        }
+        .checked {
+            text-decoration: line-through;
+            color: gray;
+        }
+    </style>
+</head>
+<body>
+    <h1>Library List</h1>
+    <table id="taskTable">
+        <thead>
+            <tr>
+                <th onclick="sortTable(0)">Title</th>
+                <th onclick="sortTable(1)">Due Date</th>
+                <th>Done</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Rows will be populated here -->
+        </tbody>
+    </table>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            fetch('output.csv')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.text();
+                })
+                .then(text => {
+                    console.log('CSV file content:', text); // Debugging step
+                    loadCSV(text);
+                })
+                .catch(error => console.error('Error fetching the CSV file:', error));
+        });
+
+        function loadCSV(text) {
+            const rows = text.split('\n').slice(1); // Skip header row
+            const tbody = document.querySelector('#taskTable tbody');
+            tbody.innerHTML = ''; // Clear existing rows
+
+            rows.forEach(row => {
+                const cols = row.split(',');
+                if (cols.length >= 2) {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${cols[0]}</td>
+                        <td>${cols[1]}</td>
+                        <td><input type="checkbox" onchange="sortTasks(this)"></td>
+                    `;
+                    tbody.appendChild(tr);
+                }
+            });
+        }
+
+        function sortTasks(checkbox) {
+            const row = checkbox.parentElement.parentElement;
+            const tbody = row.parentElement;
+            
+            if (checkbox.checked) {
+                row.classList.add('checked');
+                tbody.appendChild(row);
+            } else {
+                row.classList.remove('checked');
+                tbody.insertBefore(row, tbody.firstChild);
+            }
+        }
+
+        function sortTable(columnIndex) {
+            const table = document.getElementById('taskTable');
+            const rows = Array.from(table.rows).slice(1);
+            const tbody = table.tBodies[0];
+            const checkedRows = [];
+            const uncheckedRows = [];
+
+            rows.forEach(row => {
+                if (row.querySelector('input[type="checkbox"]').checked) {
+                    checkedRows.push(row);
+                } else {
+                    uncheckedRows.push(row);
+                }
+            });
+
+            const sortedUncheckedRows = uncheckedRows.sort((a, b) => {
+                const aText = a.cells[columnIndex].innerText;
+                const bText = b.cells[columnIndex].innerText;
+                return aText.localeCompare(bText);
+            });
+
+            const sortedCheckedRows = checkedRows.sort((a, b) => {
+                const aText = a.cells[columnIndex].innerText;
+                const bText = b.cells[columnIndex].innerText;
+                return aText.localeCompare(bText);
+            });
+
+            tbody.innerHTML = '';
+            sortedUncheckedRows.forEach(row => tbody.appendChild(row));
+            sortedCheckedRows.forEach(row => tbody.appendChild(row));
+        }
+    </script>
+</body>
+</html>
