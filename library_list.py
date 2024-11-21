@@ -26,7 +26,6 @@ def print_library_list():
 
     book_list_all = set()
     book_list_csv = set()
-    book_list_csv.add("Title,Due Date")
 
     book_list = re.findall(
         'Title: .*?<.*?-c[0-9]{2,}="">(.*?)<.*?Due Date:.*?<.*?-c[0-9]{2,}="">([0-9]{1,2}/[0-9]{1,2})/',
@@ -43,8 +42,10 @@ def print_library_list():
             overdue_flag = ""
 
         book_list_all.add(f"{overdue_flag}{title_str} - {date_str}")
+        if overdue_flag:
+            overdue_flag = '<p style="font-weight: bold; color: red;"> *** OVERDUE *** </p>'
         book_list_csv.add(
-            f'{title_str}<p style="font-weight: bold; color: red;">{overdue_flag}</p>,{date_str}')
+            f'{title_str}{overdue_flag}*^*{date_str}')
 
     book_list_all = sorted(book_list_all)
 
@@ -55,9 +56,9 @@ def print_library_list():
             print(book_info)
             outfile.write(f"{book_info}\n")
 
-    with open(outfile_name.replace(".txt", ".csv") , "w") as outfile:
+    with open(outfile_name.replace(".txt", "_html.txt") , "w") as outfile:
         for book_info in book_list_csv:
-            outfile.write(f"<{book_info}\n")
+            outfile.write(f"{book_info}\n")
 
     # os.system(f"code {outfile_name}")
 

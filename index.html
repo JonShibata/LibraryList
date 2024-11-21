@@ -42,7 +42,7 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            fetch('output.csv')
+            fetch('output_html.txt')
                 .then(response => {
                     if (!response.ok) {
                         throw new Error('Network response was not ok');
@@ -57,12 +57,12 @@
         });
 
         function loadCSV(text) {
-            const rows = text.split('\n').slice(1); // Skip header row
+            const rows = text.split('\n');
             const tbody = document.querySelector('#taskTable tbody');
             tbody.innerHTML = ''; // Clear existing rows
 
             rows.forEach(row => {
-                const cols = row.split(',');
+                const cols = row.split('*^*');
                 if (cols.length >= 2) {
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
