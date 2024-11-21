@@ -1,7 +1,7 @@
 name: launch library list
 on:
   schedule:
-    - cron: '0 0 * * 2,4' # Run every Tuesday and Thursday at midnight
+    - cron: '0 0 * * *' # Run every night at midnight
   workflow_dispatch:
 jobs:
   scrape:
