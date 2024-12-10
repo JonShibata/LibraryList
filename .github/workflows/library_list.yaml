@@ -24,7 +24,14 @@ jobs:
       - name: Install xvfb
         run: sudo apt-get install xvfb
       
-      - name: Running the Python script
+      - name: Running Python script - library_list
+        env:
+          USERNAME1: ${{ secrets.USERNAME1 }}
+          USERNAME2: ${{ secrets.USERNAME2 }}
+          USERNAME3: ${{ secrets.USERNAME3 }}
+          PASSWORD1: ${{ secrets.PASSWORD1 }}
+          PASSWORD2: ${{ secrets.PASSWORD2 }}
+          PASSWORD3: ${{ secrets.PASSWORD3 }}
         run: python library_list.py
 
       - name: Check for changes
