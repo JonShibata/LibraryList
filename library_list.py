@@ -48,6 +48,7 @@ def print_library_list():
             f'{title_str}{overdue_flag}*^*{date_str}')
 
     book_list_all = sorted(book_list_all)
+    book_list_csv = sorted(book_list_csv)
 
     outfile_name = re.sub(os.path.basename(__file__), "output.txt", os.path.abspath(__file__))
 
@@ -71,7 +72,10 @@ def get_library_data(renew_all=False):
     # change directory to the location of this file
     os.chdir(os.path.dirname(__file__))
              
-    id_list = ("903675", "902232", "6596")
+    id_dict = {}
+    id_dict[os.environ["USERNAME1"]] = os.environ["PASSWORD1"]
+    id_dict[os.environ["USERNAME2"]] = os.environ["PASSWORD2"]
+    id_dict[os.environ["USERNAME3"]] = os.environ["PASSWORD3"]
 
     options = Options()
     
@@ -80,7 +84,7 @@ def get_library_data(renew_all=False):
     browser.set_window_size(1800, 1200)
     html_str = ""
 
-    for id in id_list:
+    for id in id_dict.keys():
 
         browser.get('https://hamb.agverso.com/login?cid=hamb&lid=HAMB')
 
@@ -88,7 +92,7 @@ def get_library_data(renew_all=False):
             EC.presence_of_element_located((By.ID, "username"))).send_keys(id)
 
         WebDriverWait(browser, 100.0, 2.0).until(
-            EC.presence_of_element_located((By.ID, "password"))).send_keys("library"+Keys.ENTER)
+            EC.presence_of_element_located((By.ID, "password"))).send_keys(id_dict[id]+Keys.ENTER)
         
         time.sleep(1)
 

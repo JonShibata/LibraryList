@@ -24,20 +24,28 @@ jobs:
       - name: Install xvfb
         run: sudo apt-get install xvfb
       
-      - name: Running the Python script
+      - name: Running Python script - library_list
+        env:
+          USERNAME1: ${{ secrets.USERNAME1 }}
+          USERNAME2: ${{ secrets.USERNAME2 }}
+          USERNAME3: ${{ secrets.USERNAME3 }}
+          PASSWORD1: ${{ secrets.PASSWORD1 }}
+          PASSWORD2: ${{ secrets.PASSWORD2 }}
+          PASSWORD3: ${{ secrets.PASSWORD3 }}
         run: python library_list.py
 
       - name: Check for changes
-        id: git-status
+        id: check_changes
         run: |
-          git diff --quiet || echo "::set-output name=changes::true"
-      
+          echo "changes=false" >> $GITHUB_ENV
+          git diff --exit-code || echo "changes=true" >> $GITHUB_ENV
+
       - name: Commit and Push The Results From Python Selenium Action
-        if: steps.git-status.outputs.changes == 'true'
+        if: env.changes == 'true'
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
-          git commit -m "GitHub Actions Results added"
+          git commit -m "GitHub action -> results added"
           git push
           
