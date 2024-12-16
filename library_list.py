@@ -35,12 +35,12 @@ def print_library_list():
     for book_info in book_list:
         title_str = book_info[0].replace("&amp;", "&")
         date_items = book_info[1].split("/")
-        date_str = f"{date_items[0]:0>2}/{date_items[1]:0>2}"
 
         due_year = datetime.now().year
         if datetime.now().month == 12 and int(date_items[0]) == 1:
             due_year += 1
 
+        date_str = f"{due_year}/{date_items[0]:0>2}/{date_items[1]:0>2}"
         book_date = datetime(due_year, int(date_items[0]), int(date_items[1]))
 
         if datetime.now() > book_date:

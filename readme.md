@@ -2,23 +2,4 @@
 
 # Library List Creator
 
-
-- Run library_list.py
-- copy the output from either the terminal window or output.txt
-- Copy and paste the output.  The suggested solution is to paste it into a to-do list app
-
-
-<br>
-
-## Dependencies
-
-- TKinter: **sudo apt-get install python-tk**
-- Seleniumn: **pip install selenium**
-- chrome-driver 
-
-## ChromeDriver Updates
-
-ChromeDriver must be updated to match installed version of Chrome
-Download update from this link: https://chromedriver.chromium.org/downloads
-Copy chromedriver file to /usr/bin: 
-    sudo cp ~/Downloads/vm/chromedriver /usr/bin
+This project uses python, selenium and chrome webdriver to query the list of books my family has checked out. The list is then used to generate an HTML page that has the title, due date and a check box for each book. 
