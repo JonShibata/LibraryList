@@ -17,6 +17,8 @@ from selenium.webdriver.chrome.options import Options
 import chromedriver_autoinstaller
 from pyvirtualdisplay import Display
 
+from src.determine_due_year import determine_due_year
+
 
 def print_library_list():
 
@@ -32,15 +34,16 @@ def print_library_list():
         'Title: .*?<.*?-c[0-9]{2,}="">(.*?)<.*?Due Date:.*?<.*?-c[0-9]{2,}="">([0-9]{1,2}/[0-9]{1,2})/',
         html_str, flags=re.DOTALL)
 
+    month_now = datetime.now().month
+    year_now = datetime.now().year
+
     for book_info in book_list:
         title_str = book_info[0].replace("&amp;", "&")
         date_items = book_info[1].split("/")
 
-        due_year = datetime.now().year
-        if datetime.now().month == 12 and int(date_items[0]) == 1:
-            due_year += 1
+        due_year = determine_due_year(int(date_items[0]), month_now, year_now)
 
-        date_str = f"{due_year}/{date_items[0]:0>2}/{date_items[1]:0>2}"
+        date_str = f"{due_year}-{date_items[0]:0>2}-{date_items[1]:0>2}"
         book_date = datetime(due_year, int(date_items[0]), int(date_items[1]))
 
         if datetime.now() > book_date:
@@ -53,22 +56,14 @@ def print_library_list():
     book_list_html = sorted(book_list_html)
 
     outfile_name = re.sub(os.path.basename(__file__),
-                          "output.txt", os.path.abspath(__file__))
+                          "output_html.txt", os.path.abspath(__file__))
 
     with open(outfile_name, "w") as outfile:
         for book_info in book_list_html:
-            book_info = book_info.replace("*^*", " - ").replace(
+            outfile.write(f"{book_info}\n")
+            print(book_info.replace(
                 "<p style=\"font-weight: bold; color: red;\"> *** OVERDUE *** </p>",
-                " *** OVERDUE *** ")
-
-            print(book_info)
-            outfile.write(f"{book_info}\n")
-
-    with open(outfile_name.replace(".txt", "_html.txt"), "w") as outfile:
-        for book_info in book_list_html:
-            outfile.write(f"{book_info}\n")
-
-    # os.system(f"code {outfile_name}")
+                " *** OVERDUE *** "))
 
 
 def get_library_data(renew_all=False):
@@ -138,6 +133,8 @@ def get_library_data(renew_all=False):
     with open(outfile, "w") as outfile:
         outfile.write(html_str)
 
+
+chromedriver_autoinstaller.install()
 
 if len(sys.argv) >= 2 and sys.argv[1] in ("-r", "--renew-all"):
     get_library_data(True)
