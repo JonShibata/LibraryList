@@ -7,6 +7,8 @@ jobs:
     steps:
       - name: Checking out repo
         uses: actions/checkout@v3
+        with:
+          ref: results # Checkout the "results" branch
       - name: Setting up Python
         uses: actions/setup-python@v4
         with:
@@ -14,13 +16,25 @@ jobs:
       - name: Removing previous chrome instances on runner 
         run: sudo apt purge google-chrome-stable  
         
+      - name: Download Google Chrome
+        run: wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+      
+      - name: Install Google Chrome
+        run: sudo dpkg -i google-chrome-stable_current_amd64.deb
+      
+      - name: Fix missing dependencies
+        run: sudo apt-get install -f
+
+      - name: Delete Google Chrome .deb file
+        run: rm google-chrome-stable_current_amd64.deb
+        
       # Need to fetch reqs if needed
       - name: Installing all necessary packages
         run: pip install chromedriver-autoinstaller selenium pyvirtualdisplay
       - name: Install xvfb
         run: sudo apt-get install xvfb
       
-      - name: Running the Python script
+      - name: Running Python script - library_list
         env:
           USERNAME1: ${{ secrets.USERNAME1 }}
           USERNAME2: ${{ secrets.USERNAME2 }}
