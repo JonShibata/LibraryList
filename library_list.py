@@ -125,7 +125,7 @@ def get_library_data(renew_all=False):
 
         WebDriverWait(browser, 100.0, 2.0).until(
             EC.presence_of_element_located(
-                (By.XPATH, "//a[text()='Login']"))).click()
+                (By.XPATH, "//a[contains(text(), 'Login')]"))).click()
 
     outfile = re.sub(os.path.basename(__file__),
                      "raw_html.txt", os.path.abspath(__file__))
