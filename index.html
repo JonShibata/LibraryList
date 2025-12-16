@@ -61,30 +61,54 @@
             const tbody = document.querySelector('#taskTable tbody');
             tbody.innerHTML = ''; // Clear existing rows
 
+            const activeRows = [];
+            const completedRows = [];
+
             rows.forEach(row => {
                 const cols = row.split('*^*');
                 if (cols.length >= 2) {
+                    const title = cols[0];
+                    const dueDate = cols[1];
+                    const taskId = title + '|' + dueDate;
+                    const isChecked = localStorage.getItem(taskId) === 'true';
+
                     const tr = document.createElement('tr');
+                    if (isChecked) {
+                        tr.classList.add('checked');
+                    }
                     tr.innerHTML = `
-                        <td>${cols[0]}</td>
-                        <td>${cols[1]}</td>
-                        <td><input type="checkbox" onchange="sortTasks(this)"></td>
+                        <td>${title}</td>
+                        <td>${dueDate}</td>
+                        <td><input type="checkbox" onchange="sortTasks(this)" ${isChecked ? 'checked' : ''}></td>
                     `;
-                    tbody.appendChild(tr);
+                    
+                    if (isChecked) {
+                        completedRows.push(tr);
+                    } else {
+                        activeRows.push(tr);
+                    }
                 }
             });
+
+            activeRows.forEach(row => tbody.appendChild(row));
+            completedRows.forEach(row => tbody.appendChild(row));
         }
 
         function sortTasks(checkbox) {
             const row = checkbox.parentElement.parentElement;
             const tbody = row.parentElement;
+            const title = row.cells[0].innerText;
+            const dueDate = row.cells[1].innerText;
+            const taskId = title + '|' + dueDate;
             
             if (checkbox.checked) {
                 row.classList.add('checked');
                 tbody.appendChild(row);
+                localStorage.setItem(taskId, 'true');
             } else {
                 row.classList.remove('checked');
                 tbody.insertBefore(row, tbody.firstChild);
+                localStorage.removeItem(taskId);
             }
         }
 
