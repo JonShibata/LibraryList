@@ -57,7 +57,8 @@
         });
 
         function loadCSV(text) {
-            const rows = text.split('\n');
+            // Filter out empty lines
+            const rows = text.split('\n').filter(line => line.trim() !== ''); 
             const tbody = document.querySelector('#taskTable tbody');
             tbody.innerHTML = ''; // Clear existing rows
 
@@ -67,9 +68,12 @@
             rows.forEach(row => {
                 const cols = row.split('*^*');
                 if (cols.length >= 2) {
-                    const title = cols[0];
-                    const dueDate = cols[1];
+                    // Use .trim() to ensure consistent keys with localStorage
+                    const title = cols[0].trim(); 
+                    const dueDate = cols[1].trim(); 
                     const taskId = title + '|' + dueDate;
+                    
+                    // THIS IS THE PERSISTENCE RETRIEVAL:
                     const isChecked = localStorage.getItem(taskId) === 'true';
 
                     const tr = document.createElement('tr');
@@ -90,26 +94,37 @@
                 }
             });
 
+            // Append active tasks first, then completed tasks
             activeRows.forEach(row => tbody.appendChild(row));
             completedRows.forEach(row => tbody.appendChild(row));
+            
+            // Initial sort on Title (column 0)
+            sortTable(0);
         }
 
+        // Handles checkbox change and localStorage persistence
         function sortTasks(checkbox) {
             const row = checkbox.parentElement.parentElement;
-            const tbody = row.parentElement;
-            const title = row.cells[0].innerText;
-            const dueDate = row.cells[1].innerText;
+            
+            // Use .trim() to match the keys stored/retrieved in loadCSV
+            const title = row.cells[0].innerText.trim(); 
+            const dueDate = row.cells[1].innerText.trim();
             const taskId = title + '|' + dueDate;
             
             if (checkbox.checked) {
+                // Check: Store state
                 row.classList.add('checked');
-                tbody.appendChild(row);
                 localStorage.setItem(taskId, 'true');
             } else {
+                // Uncheck: Remove state
                 row.classList.remove('checked');
-                tbody.insertBefore(row, tbody.firstChild);
                 localStorage.removeItem(taskId);
             }
+            
+            // Re-run sortTable to move the row to the correct section 
+            // and maintain the existing sort order within that section.
+            // We use column 0 as a default sort column.
+            sortTable(0);
         }
 
         function sortTable(columnIndex) {
@@ -119,7 +134,9 @@
             const checkedRows = [];
             const uncheckedRows = [];
 
+            // 1. Separate checked and unchecked rows
             rows.forEach(row => {
+                // Check the state from the input element
                 if (row.querySelector('input[type="checkbox"]').checked) {
                     checkedRows.push(row);
                 } else {
@@ -127,18 +144,21 @@
                 }
             });
 
+            // 2. Sort the unchecked rows
             const sortedUncheckedRows = uncheckedRows.sort((a, b) => {
-                const aText = a.cells[columnIndex].innerText;
-                const bText = b.cells[columnIndex].innerText;
+                const aText = a.cells[columnIndex].innerText.trim();
+                const bText = b.cells[columnIndex].innerText.trim();
                 return aText.localeCompare(bText);
             });
 
+            // 3. Sort the checked rows
             const sortedCheckedRows = checkedRows.sort((a, b) => {
-                const aText = a.cells[columnIndex].innerText;
-                const bText = b.cells[columnIndex].innerText;
+                const aText = a.cells[columnIndex].innerText.trim();
+                const bText = b.cells[columnIndex].innerText.trim();
                 return aText.localeCompare(bText);
             });
 
+            // 4. Re-render the table: unchecked first, then checked
             tbody.innerHTML = '';
             sortedUncheckedRows.forEach(row => tbody.appendChild(row));
             sortedCheckedRows.forEach(row => tbody.appendChild(row));
