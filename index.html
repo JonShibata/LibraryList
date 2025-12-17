@@ -30,13 +30,15 @@
     <table id="taskTable">
         <thead>
             <tr>
-                <th onclick="sortTable(0)">Title</th>
-                <th onclick="sortTable(1)">Due Date</th>
-                <th>Done</th>
+                <th>Found</th> 
+                
+                <th onclick="sortTable(1)">Title</th> 
+                
+                <th onclick="sortTable(2)">Due Date</th>
             </tr>
         </thead>
         <tbody>
-        </tbody>
+            </tbody>
     </table>
 
     <script>
@@ -55,60 +57,69 @@
                 .catch(error => console.error('Error fetching the CSV file:', error));
         });
 
+        // Helper function to clean the title string by removing the marker
+        function cleanTitle(title) {
+            // Use a Regular Expression to remove the specific marker
+            return title.replace(/\s*\*\*\* OVERDUE \*\*\*\s*/g, '').trim();
+        }
+
         function loadCSV(text) {
-            // Filter out empty lines
             const rows = text.split('\n').filter(line => line.trim() !== ''); 
             const tbody = document.querySelector('#taskTable tbody');
-            tbody.innerHTML = ''; // Clear existing rows
+            tbody.innerHTML = ''; 
 
-            // 1. Group tasks by Title and find the one with the latest Due Date (later date = keeper)
-            const uniqueTasks = new Map(); // Key: Title, Value: {title, dueDateStr}
+            // 1. Group tasks by Title and find the one with the latest Due Date
+            const uniqueTasks = new Map(); 
 
             rows.forEach(row => {
                 const cols = row.split('*^*');
                 if (cols.length >= 2) {
-                    const title = cols[0].trim();
+                    const rawTitle = cols[0].trim();
                     const dueDateStr = cols[1].trim();
                     
-                    // Use new Date() for reliable date comparison
+                    // Apply cleanTitle to the raw title for deduplication key
+                    const titleKey = cleanTitle(rawTitle);
                     const dueDate = new Date(dueDateStr); 
 
-                    // Check if we've seen this title before
-                    if (uniqueTasks.has(title)) {
-                        const existingTask = uniqueTasks.get(title);
+                    if (uniqueTasks.has(titleKey)) {
+                        const existingTask = uniqueTasks.get(titleKey);
                         const existingDueDate = new Date(existingTask.dueDateStr);
 
                         // If the current task's due date is LATER, replace the existing one
                         if (dueDate > existingDueDate) {
-                            uniqueTasks.set(title, { title: title, dueDateStr: dueDateStr });
+                            // Store the original/raw title here, as it might contain the marker
+                            uniqueTasks.set(titleKey, { rawTitle: rawTitle, dueDateStr: dueDateStr });
                         }
                     } else {
-                        // First time seeing this title, add it to the Map
-                        uniqueTasks.set(title, { title: title, dueDateStr: dueDateStr });
+                        // Store the original/raw title
+                        uniqueTasks.set(titleKey, { rawTitle: rawTitle, dueDateStr: dueDateStr });
                     }
                 }
             });
 
-            // 2. Build the table using ONLY the unique tasks (ensuring persistence robustness)
+            // 2. Build the table using ONLY the unique tasks
             const activeRows = [];
             const completedRows = [];
 
             uniqueTasks.forEach(task => {
-                const title = task.title;
+                const title = task.rawTitle;
                 const dueDate = task.dueDateStr;
-                const taskId = title + '|' + dueDate;
                 
-                // Persistence Retrieval
+                // CRITICAL FIX: The taskId MUST use the CLEANED title for persistence lookup
+                const cleanTitleForId = cleanTitle(title);
+                const taskId = cleanTitleForId + '|' + dueDate; 
+                
                 const isChecked = localStorage.getItem(taskId) === 'true';
 
                 const tr = document.createElement('tr');
                 if (isChecked) {
                     tr.classList.add('checked');
                 }
+                // Update TR innerHTML to reflect the new column order (Found, Title, Date)
                 tr.innerHTML = `
+                    <td><input type="checkbox" onchange="sortTasks(this)" ${isChecked ? 'checked' : ''}></td>
                     <td>${title}</td>
                     <td>${dueDate}</td>
-                    <td><input type="checkbox" onchange="sortTasks(this)" ${isChecked ? 'checked' : ''}></td>
                 `;
                 
                 if (isChecked) {
@@ -118,70 +129,72 @@
                 }
             });
 
-            // 3. Append to table and sort
             activeRows.forEach(row => tbody.appendChild(row));
             completedRows.forEach(row => tbody.appendChild(row));
             
-            // Initial sort on Title (column 0)
-            sortTable(0); 
+            // Initial sort on Title (now column 1)
+            sortTable(1); 
         }
 
         // Handles checkbox change and localStorage persistence
         function sortTasks(checkbox) {
             const row = checkbox.parentElement.parentElement;
             
-            // Use .trim() to ensure consistent keys for localStorage
-            const title = row.cells[0].innerText.trim(); 
-            const dueDate = row.cells[1].innerText.trim();
-            const taskId = title + '|' + dueDate;
+            // NOTE: Title is now in cell index 1
+            let title = row.cells[1].innerText; 
+            
+            // CRITICAL FIX: Clean the title text before generating the taskId
+            const cleanTitleForId = cleanTitle(title);
+            
+            // NOTE: Due Date is now in cell index 2
+            const dueDate = row.cells[2].innerText.trim();
+            
+            const taskId = cleanTitleForId + '|' + dueDate;
             
             if (checkbox.checked) {
-                // Check: Store state
                 row.classList.add('checked');
                 localStorage.setItem(taskId, 'true');
             } else {
-                // Uncheck: Remove state
                 row.classList.remove('checked');
                 localStorage.removeItem(taskId);
             }
             
-            // Re-run sortTable to move the row to the correct section (active/completed) 
-            // and maintain the existing sort order within that section.
-            sortTable(0);
+            // Re-run sortTable on Title (column 1)
+            sortTable(1);
         }
 
+        // Sort function updated to use new column indices
         function sortTable(columnIndex) {
             const table = document.getElementById('taskTable');
-            // Get all rows except the header
-            const rows = Array.from(table.rows).slice(1); 
+            const rows = Array.from(table.rows).slice(1);
             const tbody = table.tBodies[0];
             const checkedRows = [];
             const uncheckedRows = [];
 
-            // 1. Separate checked and unchecked rows
             rows.forEach(row => {
-                if (row.querySelector('input[type="checkbox"]').checked) {
+                // Checkbox is now the first cell's input
+                if (row.cells[0].querySelector('input[type="checkbox"]').checked) {
                     checkedRows.push(row);
                 } else {
                     uncheckedRows.push(row);
                 }
             });
 
-            // 2. Sort the unchecked rows
-            const sortedUncheckedRows = uncheckedRows.sort((a, b) => {
+            // Comparison logic must now handle column index 1 (Title) and 2 (Due Date)
+            const sorter = (a, b) => {
                 const aText = a.cells[columnIndex].innerText.trim();
                 const bText = b.cells[columnIndex].innerText.trim();
-                return aText.localeCompare(bText);
-            });
+                
+                // CRITICAL: Ensure we clean the title if sorting by Title (column 1)
+                const finalAText = columnIndex === 1 ? cleanTitle(aText) : aText;
+                const finalBText = columnIndex === 1 ? cleanTitle(bText) : bText;
 
-            // 3. Sort the checked rows
-            const sortedCheckedRows = checkedRows.sort((a, b) => {
-                const aText = a.cells[columnIndex].innerText.trim();
-                const bText = b.cells[columnIndex].innerText.trim();
-                return aText.localeCompare(bText);
-            });
+                return finalAText.localeCompare(finalBText);
+            };
 
-            // 4. Re-render the table: unchecked (active) first, then checked (completed)
+            const sortedUncheckedRows = uncheckedRows.sort(sorter);
+            const sortedCheckedRows = checkedRows.sort(sorter);
+
             tbody.innerHTML = '';
             sortedUncheckedRows.forEach(row => tbody.appendChild(row));
             sortedCheckedRows.forEach(row => tbody.appendChild(row));
