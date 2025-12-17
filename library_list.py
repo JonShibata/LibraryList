@@ -44,14 +44,7 @@ def print_library_list():
         due_year = determine_due_year(int(date_items[0]), month_now, year_now)
 
         date_str = f"{due_year}-{date_items[0]:0>2}-{date_items[1]:0>2}"
-        book_date = datetime(due_year, int(date_items[0]), int(date_items[1]))
-
-        if datetime.now() > book_date:
-            overdue_string_html = '<p style="font-weight: bold; color: red;"> *** OVERDUE *** </p>'
-        else:
-            overdue_string_html = ""
-
-        book_list_html.add(f"{overdue_string_html}{title_str}*^*{date_str}")
+        book_list_html.add(f"{title_str}*^*{date_str}")
 
     book_list_html = sorted(book_list_html)
 
@@ -61,9 +54,6 @@ def print_library_list():
     with open(outfile_name, "w") as outfile:
         for book_info in book_list_html:
             outfile.write(f"{book_info}\n")
-            print(book_info.replace(
-                "<p style=\"font-weight: bold; color: red;\"> *** OVERDUE *** </p>",
-                " *** OVERDUE *** "))
 
 
 def get_library_data(renew_all=False):
