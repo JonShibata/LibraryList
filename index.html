@@ -46,10 +46,6 @@
                 });
         });
 
-        // Global variables for sorting state
-        let currentSortColumn = 2; // Default to Due Date (index 2)
-        let sortDirection = 1; // 1 for ascending, -1 for descending
-
         function loadCSV(text) {
             const tbody = document.querySelector('#taskTable tbody');
             const now = new Date();
