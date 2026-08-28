@@ -80,42 +80,54 @@ def get_library_data(renew_all=False):
 
         browser.get('https://hamb.agverso.com/login?cid=hamb&lid=HAMB')
 
-        WebDriverWait(browser, 100.0, 2.0).until(
-            EC.presence_of_element_located((By.ID, "username"))).send_keys(id)
+        username_field = WebDriverWait(browser, 100.0, 2.0).until(
+            EC.visibility_of_element_located((By.ID, "username"))
+        )
+        username_field.send_keys(id)
 
-        WebDriverWait(browser, 100.0, 2.0).until(
-            EC.presence_of_element_located((By.ID, "password"))).send_keys(id_dict[id]+Keys.ENTER)
+        password_field = WebDriverWait(browser, 100.0, 2.0).until(
+            EC.visibility_of_element_located((By.ID, "password"))
+        )
+        password_field.send_keys(id_dict[id] + Keys.ENTER)
 
-        time.sleep(1)
+        dropdown_btn1 = WebDriverWait(browser, 100.0, 2.0).until(
+            EC.element_to_be_clickable((By.CLASS_NAME, "fa-angle-down"))
+        )
+        dropdown_btn1.click()
 
-        WebDriverWait(browser, 100.0, 2.0).until(EC.presence_of_element_located(
-            (By.CLASS_NAME, "fa-angle-down"))).click()
-
-        WebDriverWait(browser, 100.0, 2.0).until(
-            EC.presence_of_element_located((By.XPATH, "//a[text()='Items Out ']"))).click()
+        items_out_link = WebDriverWait(browser, 100.0, 2.0).until(
+            EC.element_to_be_clickable((By.XPATH, "//a[text()='Items Out ']"))
+        )
+        items_out_link.click()
 
         renew_all_button = WebDriverWait(browser, 100.0, 2.0).until(
-            EC.presence_of_element_located(
-                (By.XPATH, "//button[@aria-label='Renew All']")))
+            EC.element_to_be_clickable((By.XPATH, "//button[@aria-label='Renew All']"))
+        )
 
         if renew_all:
             renew_all_button.click()
 
-            WebDriverWait(browser, 100.0, 2.0).until(
-                EC.presence_of_element_located((By.XPATH, "//button[@aria-label='OK']"))).click()
+            ok_button = WebDriverWait(browser, 100.0, 2.0).until(
+                EC.element_to_be_clickable((By.XPATH, "//button[@aria-label='OK']"))
+            )
+            ok_button.click()
 
-        WebDriverWait(browser, 100.0, 2.0).until(EC.presence_of_element_located(
-            (By.CLASS_NAME, "fa-angle-down"))).click()
+        dropdown_btn2 = WebDriverWait(browser, 100.0, 2.0).until(
+            EC.element_to_be_clickable((By.CLASS_NAME, "fa-angle-down"))
+        )
+        dropdown_btn2.click()
 
         html_str = html_str + browser.page_source
 
-        WebDriverWait(browser, 100.0, 2.0).until(
-            EC.presence_of_element_located(
-                (By.XPATH, "//span[contains(text(), 'Logout')]"))).click()
+        logout_span = WebDriverWait(browser, 100.0, 2.0).until(
+            EC.element_to_be_clickable((By.XPATH, "//span[contains(text(), 'Logout')]"))
+        )
+        logout_span.click()
 
-        WebDriverWait(browser, 100.0, 2.0).until(
-            EC.presence_of_element_located(
-                (By.XPATH, "//a[contains(text(), 'Login')]"))).click()
+        login_link = WebDriverWait(browser, 100.0, 2.0).until(
+            EC.element_to_be_clickable((By.XPATH, "//a[contains(text(), 'Login')]"))
+        )
+        login_link.click()
 
     outfile = re.sub(os.path.basename(__file__),
                      "raw_html.txt", os.path.abspath(__file__))
